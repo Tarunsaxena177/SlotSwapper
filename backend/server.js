@@ -23,27 +23,26 @@ dotenv.config({ path: resolve(__dirname, '../.env') });
 // Connect to MongoDB
 await connectDB();
 
-// Express app setup
+// Create Express app and HTTP server
 const app = express();
 const httpServer = createServer(app);
 
-// Enable CORS for frontend (local and deployed)
+// Enable CORS for frontend (local and production)
 app.use(cors({
-  origin: ['http://localhost:3000', process.env.FRONTEND_URL],
+  origin: ['http://localhost:3000', process.env.FRONTEND_URL].filter(Boolean),
   credentials: true,
 }));
-
 app.use(express.json());
 
-// API routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/swaps', swapRoutes);
 
-// Socket.IO setup
+// Setup Socket.IO
 const io = new Server(httpServer, {
   cors: {
-    origin: ['http://localhost:3000', process.env.FRONTEND_URL],
+    origin: ['http://localhost:3000', process.env.FRONTEND_URL].filter(Boolean),
     credentials: true,
   },
 });
@@ -69,19 +68,23 @@ io.on('connection', (socket) => {
   });
 });
 
+// Make io and connected users accessible in routes
 app.set('io', io);
 app.set('connectedUsers', connectedUsers);
 
-// ✅ Serve React build from /build (Create React App)
+// Serve frontend (React build from /frontend/build)
 const buildPath = path.join(__dirname, '../frontend/build');
-app.use(express.static(buildPath));
+if (fs.existsSync(buildPath)) {
+  app.use(express.static(buildPath));
 
-// Wildcard route to support React Router
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
-});
+  app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(buildPath, 'index.html'));
+  });
+} else {
+  console.warn('⚠️ Build folder not found:', buildPath);
+}
 
-// Start the server
+// Start server
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
