@@ -20,7 +20,7 @@ function App() {
   useEffect(() => {
     if (token) {
       // Fetch logged-in user's info
-      fetch('http://localhost:5000/api/auth/me', {
+      fetch('https://slotswapper-g46h.onrender.com/api/auth/me', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -28,7 +28,7 @@ function App() {
         .then(res => res.json())
         .then(data => {
           setUser(data);
-          const newSocket = io('http://localhost:5000', {
+          const newSocket = io('https://slotswapper-g46h.onrender.com', {
             auth: { token },
             transports: ['websocket'],
           });

@@ -29,7 +29,7 @@ const httpServer = createServer(app);
 
 // Enable CORS for frontend (local and production)
 app.use(cors({
-  origin: ['http://localhost:3000', process.env.FRONTEND_URL].filter(Boolean),
+  origin: ['https://slotswapper-g46h.onrender.com', process.env.FRONTEND_URL].filter(Boolean),
   credentials: true,
 }));
 app.use(express.json());
